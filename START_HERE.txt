@@ -7,6 +7,6 @@ DEMO PARA CLASE - STREAMLIT + OLLAMA + SCIKIT-LEARN
 5) Ejecutar: python -m streamlit run app.py
 
 Dataset incluido:
-data/diabetes_sklearn.csv
+data/BI_Ventas_minoristas_dataset.csv
 
 Objetivo: mostrar una versión básica y reproducible del Proyecto Final Integrador.
