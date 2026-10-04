@@ -2,6 +2,20 @@ from __future__ import annotations
 import streamlit as st
 import pandas as pd
 
+import sys
+import os
+
+# Añade la ruta del directorio raíz del proyecto al PATH de Python
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Importaciones posteriores
+from __future__ import annotations
+import streamlit as st
+import pandas as pd
+
+from modules.data import load_default_data, load_uploaded_data, dataset_profile
+# ... resto de tus imports
+
 from modules.data import load_default_data, load_uploaded_data, dataset_profile
 from modules.analytics import (
     missing_report,
