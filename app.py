@@ -1,7 +1,7 @@
 from __future__ import annotations
 import streamlit as st
 import pandas as pd
-
+from __future__ import annotations
 import sys
 import os
 
@@ -9,7 +9,7 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 # Importaciones posteriores
-from __future__ import annotations
+
 import streamlit as st
 import pandas as pd
 
