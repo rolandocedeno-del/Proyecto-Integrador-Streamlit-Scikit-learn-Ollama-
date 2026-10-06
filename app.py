@@ -1,4 +1,34 @@
 from __future__ import annotations
+
+import os
+import sys
+
+# Añade la ruta absoluta de la raíz del proyecto al sys.path
+root_path = os.path.dirname(os.path.abspath(__file__))
+if root_path not in sys.path:
+    sys.path.insert(0, root_path)
+
+import pandas as pd
+import streamlit as st
+
+# Módulos locales
+from modules.agent import LocalDataAgent, offline_summary
+from modules.analytics import (
+    build_agent_context,
+    missing_report,
+    numeric_summary,
+    target_correlations,
+    train_regression_demo,
+)
+from modules.data import dataset_profile, load_default_data, load_uploaded_data
+from modules.visualizations import (
+    correlation_heatmap,
+    histogram,
+    predicted_vs_real,
+    scatter,
+)
+
+from __future__ import annotations
 import streamlit as st
 import pandas as pd
 
