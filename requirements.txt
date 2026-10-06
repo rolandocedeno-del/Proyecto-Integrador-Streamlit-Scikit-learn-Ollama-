@@ -4,4 +4,4 @@ numpy>=1.26
 plotly>=5.24
 scikit-learn>=1.5
 requests>=2.31
-statsmodels
+statsmodels>=0.14
