@@ -1,45 +1,28 @@
 from __future__ import annotations
-
-import os
-import sys
-
-# Asegura la inclusión del directorio raíz en sys.path para Streamlit Cloud y local
-root_path = os.path.dirname(os.path.abspath(__file__))
-if root_path not in sys.path:
-    sys.path.insert(0, root_path)
-
-import pandas as pd
 import streamlit as st
+import pandas as pd
 
-# Módulos locales
-from modules.agent import LocalDataAgent, offline_summary
+from modules.data import load_default_data, load_uploaded_data, dataset_profile
 from modules.analytics import (
-    build_agent_context,
     missing_report,
     numeric_summary,
     target_correlations,
     train_regression_demo,
+    build_agent_context,
 )
-from modules.data import dataset_profile, load_default_data, load_uploaded_data
-from modules.visualizations import (
-    correlation_heatmap,
-    histogram,
-    predicted_vs_real,
-    scatter,
-)
+from modules.visualizations import histogram, scatter, correlation_heatmap, predicted_vs_real
+from modules.agent import LocalDataAgent, offline_summary
 
-# Configuración inicial de la página
 st.set_page_config(page_title="Demo IA + Datos", page_icon="🤖", layout="wide")
 
 st.title("Demo · Explorador de datos con agente local")
-st.caption("Streamlit + Scikit-learn + Ollama · Ejemplo básico del Proyecto Final Integrador")
+st.caption("Streamlit + Scikit-learn + Ollama · ejemplo básico del Proyecto Final Integrador")
 
 with st.sidebar:
     st.header("Configuración")
     uploaded = st.file_uploader("CSV opcional", type=["csv"])
     model_name = st.text_input("Modelo Ollama", value="llama3.2:3b")
 
-# Carga de datos
 try:
     df = load_uploaded_data(uploaded) if uploaded else load_default_data()
 except Exception as exc:
@@ -52,11 +35,7 @@ if not numeric_cols:
     st.stop()
 
 default_target = "target" if "target" in numeric_cols else numeric_cols[-1]
-target = st.sidebar.selectbox(
-    "Variable objetivo",
-    numeric_cols,
-    index=numeric_cols.index(default_target),
-)
+target = st.sidebar.selectbox("Variable objetivo", numeric_cols, index=numeric_cols.index(default_target))
 
 profile = dataset_profile(df)
 model_result = None
@@ -67,7 +46,6 @@ except Exception:
 
 agent = LocalDataAgent(model=model_name)
 ollama_ok, installed_models, ollama_detail = agent.status()
-
 with st.sidebar:
     st.markdown("---")
     if ollama_ok:
@@ -78,7 +56,7 @@ with st.sidebar:
         st.warning("Ollama no detectado")
         st.caption("La aplicación continúa funcionando sin el agente generativo.")
 
-# Métricas principales (KPIs)
+# KPIs
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("Registros", profile["rows"])
 c2.metric("Variables", profile["columns"])
@@ -89,7 +67,6 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📄 Datos", "📊 Exploración", "📈 Modelo", "🤖 Agente", "🧩 Arquitectura"
 ])
 
-# Pestaña 1: Datos
 with tab1:
     st.subheader("Dataset de trabajo")
     if uploaded is None:
@@ -99,47 +76,43 @@ with tab1:
         )
     else:
         st.info("Se está utilizando el CSV cargado desde la interfaz.")
-    
-    st.dataframe(df.head(25), width="stretch", hide_index=True)
+    st.dataframe(df.head(25), use_container_width=True, hide_index=True)
 
     st.markdown("#### Calidad de datos")
-    st.dataframe(missing_report(df), width="stretch", hide_index=True)
+    st.dataframe(missing_report(df), use_container_width=True, hide_index=True)
 
     st.markdown("#### Resumen numérico")
-    st.dataframe(numeric_summary(df), width="stretch", hide_index=True)
+    st.dataframe(numeric_summary(df), use_container_width=True, hide_index=True)
 
-# Pestaña 2: Exploración
 with tab2:
     st.subheader("Exploración visual")
     xcol = st.selectbox("Variable para distribución", numeric_cols, index=0)
-    st.plotly_chart(histogram(df, xcol), width="stretch")
+    st.plotly_chart(histogram(df, xcol), use_container_width=True)
 
     candidates = [c for c in numeric_cols if c != target]
     if candidates:
         xscatter = st.selectbox("Variable explicativa", candidates, index=0)
-        st.plotly_chart(scatter(df, xscatter, target), width="stretch")
+        st.plotly_chart(scatter(df, xscatter, target), use_container_width=True)
 
     st.markdown("#### Correlaciones con la variable objetivo")
-    st.dataframe(target_correlations(df, target).head(10), width="stretch", hide_index=True)
-    st.plotly_chart(correlation_heatmap(df), width="stretch")
+    st.dataframe(target_correlations(df, target).head(10), use_container_width=True, hide_index=True)
+    st.plotly_chart(correlation_heatmap(df), use_container_width=True)
 
-# Pestaña 3: Modelo
 with tab3:
     st.subheader("Modelo de regresión lineal")
     if model_result is None:
         st.warning("No fue posible entrenar el modelo con la configuración actual.")
     else:
         m = model_result["metrics"]
-        mc1, mc2, mc3 = st.columns(3)
-        mc1.metric("R²", f"{m['r2']:.3f}")
-        mc2.metric("MAE", f"{m['mae']:.3f}")
-        mc3.metric("RMSE", f"{m['rmse']:.3f}")
+        c1, c2, c3 = st.columns(3)
+        c1.metric("R²", f"{m['r2']:.3f}")
+        c2.metric("MAE", f"{m['mae']:.3f}")
+        c3.metric("RMSE", f"{m['rmse']:.3f}")
         st.caption(f"Entrenamiento: {model_result['n_train']} registros · Prueba: {model_result['n_test']} registros")
-        st.plotly_chart(predicted_vs_real(model_result["predictions"]), width="stretch")
+        st.plotly_chart(predicted_vs_real(model_result["predictions"]), use_container_width=True)
         st.markdown("#### Coeficientes del modelo")
-        st.dataframe(model_result["coefficients"], width="stretch", hide_index=True)
+        st.dataframe(model_result["coefficients"], use_container_width=True, hide_index=True)
 
-# Pestaña 4: Agente LLM
 with tab4:
     st.subheader("Agente local para interpretación")
     context = build_agent_context(df, target, model_result)
@@ -173,7 +146,6 @@ with tab4:
             st.markdown(offline_summary(context))
             st.caption("Respuesta de respaldo: Ollama no está disponible en este equipo.")
 
-# Pestaña 5: Arquitectura
 with tab5:
     st.subheader("Arquitectura modular")
     st.code(
@@ -183,7 +155,7 @@ modules/data.py
         ↓
 modules/analytics.py
    ↙            ↘
-visualizations.py   contexto resumido
+visualizations.py  contexto resumido
    ↓            ↓
 Streamlit ← modules/agent.py → Ollama local""",
         language="text",
